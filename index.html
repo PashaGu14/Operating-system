@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Associate Operating System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F4F6F2;
+    --card:#FFFFFF;
+    --ink:#182420;
+    --muted:#5F6E67;
+    --line:#DCE3DD;
+    --green:#0E6B4F;
+    --green-soft:#E4F0EA;
+    --amber:#B8811F;
+    --amber-soft:#F7EEDD;
+    --red:#A6402E;
+    --mono:'IBM Plex Mono',ui-monospace,monospace;
+    --sans:'Public Sans',-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;padding-bottom:60px}
+  .wrap{max-width:960px;margin:0 auto;padding:0 16px}
+
+  /* Header */
+  header{border-bottom:2px solid var(--ink);background:var(--card)}
+  .head-inner{max-width:960px;margin:0 auto;padding:20px 16px 14px;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:10px}
+  .firm{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  h1{font-size:22px;font-weight:800;letter-spacing:-.01em}
+  .head-stats{display:flex;gap:22px;font-family:var(--mono)}
+  .hstat{text-align:right}
+  .hstat .num{font-size:20px;font-weight:600;color:var(--green)}
+  .hstat .lbl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+
+  /* Tabs */
+  nav{display:flex;gap:0;margin:18px 0 20px;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--card)}
+  nav button{flex:1;padding:10px 4px;border:none;background:none;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);cursor:pointer;border-right:1px solid var(--line)}
+  nav button:last-child{border-right:none}
+  nav button.active{background:var(--ink);color:#fff}
+  nav button:focus-visible{outline:2px solid var(--green);outline-offset:-2px}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:16px}
+  .card h2{font-size:13px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;font-weight:600}
+
+  /* Day nav */
+  .daybar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+  .daybar .date{font-weight:700;font-size:17px}
+  .daybar .meta{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .daybar button{border:1px solid var(--line);background:var(--card);border-radius:6px;padding:6px 12px;cursor:pointer;font-family:var(--mono);font-size:12px}
+  .daybar button:hover{border-color:var(--ink)}
+  .weekend-note{background:var(--amber-soft);border:1px solid var(--amber);border-radius:8px;padding:12px 14px;font-size:14px;margin-bottom:16px}
+
+  /* Focus banner */
+  .focus{display:flex;gap:14px;align-items:center;background:var(--green-soft);border:1px solid var(--green);border-radius:10px;padding:14px 16px;margin-bottom:16px}
+  .focus .tag{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;background:var(--green);color:#fff;padding:4px 8px;border-radius:4px;white-space:nowrap}
+  .focus .txt{font-size:14px}
+  .focus .txt strong{display:block;font-size:15px}
+
+  /* Checklist */
+  .task{display:flex;align-items:flex-start;gap:12px;padding:10px 6px;border-bottom:1px solid var(--line);cursor:pointer}
+  .task:last-child{border-bottom:none}
+  .task input{margin-top:4px;width:16px;height:16px;accent-color:var(--green);cursor:pointer}
+  .task .time{font-family:var(--mono);font-size:12px;color:var(--muted);width:52px;flex-shrink:0;padding-top:2px}
+  .task .name{font-weight:600;font-size:14px}
+  .task .desc{font-size:13px;color:var(--muted)}
+  .task.done .name,.task.done .desc{text-decoration:line-through;opacity:.5}
+  .progress{height:6px;background:var(--line);border-radius:3px;margin-top:14px;overflow:hidden}
+  .progress div{height:100%;background:var(--green);border-radius:3px;transition:width .3s}
+
+  /* KPI inputs */
+  .kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+  .kfield label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+  .kfield input{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;font-family:var(--mono);font-size:15px;background:var(--paper)}
+  .kfield input:focus{outline:2px solid var(--green);border-color:var(--green)}
+  .kfield textarea{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;font-family:var(--sans);font-size:14px;background:var(--paper);resize:vertical;min-height:56px}
+  .kfield.wide{grid-column:1/-1}
+  .savebar{margin-top:14px;display:flex;gap:10px;align-items:center}
+  .btn{background:var(--ink);color:#fff;border:none;border-radius:6px;padding:10px 18px;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+  .btn:hover{background:var(--green)}
+  .btn.ghost{background:none;color:var(--ink);border:1px solid var(--line)}
+  .btn.ghost:hover{border-color:var(--ink);background:var(--paper)}
+  .saved-msg{font-family:var(--mono);font-size:12px;color:var(--green)}
+
+  /* EOD memo */
+  .memo{background:#FFFDF7;border:1px solid var(--ink);border-radius:2px;padding:22px 24px;font-family:var(--mono);font-size:13px;white-space:pre-wrap;line-height:1.7;box-shadow:3px 3px 0 var(--line)}
+  .memo-head{font-weight:600;border-bottom:1px solid var(--ink);padding-bottom:8px;margin-bottom:12px}
+
+  /* Dashboard */
+  .statgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+  .stat{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:14px}
+  .stat .num{font-family:var(--mono);font-size:26px;font-weight:600;color:var(--green)}
+  .stat .num.warn{color:var(--amber)}
+  .stat .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+  table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px}
+  th{text-align:left;padding:8px 6px;border-bottom:2px solid var(--ink);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  td{padding:8px 6px;border-bottom:1px solid var(--line)}
+  .hit{color:var(--green);font-weight:600}
+  .miss{color:var(--red)}
+
+  /* Curriculum */
+  .week{border:1px solid var(--line);border-radius:8px;margin-bottom:10px;overflow:hidden}
+  .week-head{display:flex;gap:12px;align-items:center;padding:12px 14px;background:var(--paper);cursor:pointer}
+  .week-head .wnum{font-family:var(--mono);font-size:11px;background:var(--ink);color:#fff;padding:3px 8px;border-radius:4px;white-space:nowrap}
+  .week-head .wnum.current{background:var(--green)}
+  .week-head .wtitle{font-weight:600;font-size:14px;flex:1}
+  .week-head .wdate{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .week-body{padding:12px 14px;font-size:13px;display:none}
+  .week.open .week-body{display:block}
+  .week-body .row{display:flex;gap:8px;margin-bottom:8px}
+  .week-body .row .pill{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:4px;height:fit-content;white-space:nowrap;margin-top:2px}
+  .pill.sql{background:var(--green-soft);color:var(--green);border:1px solid var(--green)}
+  .pill.py{background:var(--amber-soft);color:var(--amber);border:1px solid var(--amber)}
+  .pill.fri{background:var(--paper);color:var(--muted);border:1px solid var(--line)}
+
+  .hidden{display:none}
+  footer{margin-top:30px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--muted)}
+  @media(max-width:600px){
+    .head-inner{flex-direction:column;align-items:flex-start}
+    .head-stats{width:100%;justify-content:space-between}
+    nav button{font-size:9px;padding:10px 2px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="head-inner">
+    <div>
+      <div class="firm">Mulenga Analytics Group · Internal</div>
+      <h1>Associate Operating System</h1>
+    </div>
+    <div class="head-stats">
+      <div class="hstat"><div class="num" id="hStreak">–</div><div class="lbl">Day streak</div></div>
+      <div class="hstat"><div class="num" id="hApps">–</div><div class="lbl">Total apps</div></div>
+      <div class="hstat"><div class="num" id="hProbs">–</div><div class="lbl">Problems solved</div></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav>
+    <button class="active" data-tab="today">Today</button>
+    <button data-tab="report">EOD Report</button>
+    <button data-tab="dash">Dashboard</button>
+    <button data-tab="plan">Curriculum</button>
+  </nav>
+
+  <!-- ============ TODAY ============ -->
+  <section id="tab-today">
+    <div class="daybar">
+      <button id="prevDay" aria-label="Previous day">◀ Prev</button>
+      <div style="text-align:center">
+        <div class="date" id="dayLabel"></div>
+        <div class="meta" id="dayMeta"></div>
+      </div>
+      <button id="nextDay" aria-label="Next day">Next ▶</button>
+    </div>
+
+    <div id="weekendNote" class="weekend-note hidden">Weekend. The desk is closed. Rest is part of the system, Pasha. See you Monday.</div>
+
+    <div id="workday">
+      <div class="focus">
+        <span class="tag" id="focusTag">SQL</span>
+        <div class="txt"><strong id="focusTitle"></strong><span id="focusDesc"></span></div>
+      </div>
+
+      <div class="card">
+        <h2>Daily Schedule · Mon–Fri</h2>
+        <div id="taskList"></div>
+        <div class="progress"><div id="progFill" style="width:0%"></div></div>
+      </div>
+
+      <div class="card">
+        <h2>KPI Log · enter actuals for this day</h2>
+        <div class="kgrid">
+          <div class="kfield"><label>Tier 1 apps (goal 2–3)</label><input type="number" min="0" id="k_t1" inputmode="numeric"></div>
+          <div class="kfield"><label>Tier 2 apps (goal 4–5)</label><input type="number" min="0" id="k_t2" inputmode="numeric"></div>
+          <div class="kfield"><label>Tier 3 apps (goal 2–3)</label><input type="number" min="0" id="k_t3" inputmode="numeric"></div>
+          <div class="kfield"><label>Outreach msgs (goal 3–5)</label><input type="number" min="0" id="k_out" inputmode="numeric"></div>
+          <div class="kfield"><label>Skill minutes (goal 45–60)</label><input type="number" min="0" id="k_min" inputmode="numeric"></div>
+          <div class="kfield"><label>Problems solved (goal 4+)</label><input type="number" min="0" id="k_prob" inputmode="numeric"></div>
+          <div class="kfield"><label>Recruiter responses</label><input type="number" min="0" id="k_resp" inputmode="numeric"></div>
+          <div class="kfield"><label>Interviews booked</label><input type="number" min="0" id="k_int" inputmode="numeric"></div>
+          <div class="kfield"><label>Interview drills done (goal 1)</label><input type="number" min="0" id="k_drill" inputmode="numeric"></div>
+          <div class="kfield wide"><label>What I practiced / roles applied to</label><textarea id="k_notes" placeholder="e.g. LeetCode SQL 50 #8–12 (JOINs). Applied: Deloitte BA, CVS analytics..."></textarea></div>
+          <div class="kfield wide"><label>Blockers / wins</label><textarea id="k_block" placeholder="e.g. Struggled with self-joins. Win: recruiter reply from Humana."></textarea></div>
+          <div class="kfield wide"><label>Tomorrow's top 3</label><textarea id="k_tom" placeholder="1. ...&#10;2. ...&#10;3. ..."></textarea></div>
+        </div>
+        <div class="savebar">
+          <button class="btn" id="saveDay">Save day</button>
+          <span class="saved-msg hidden" id="savedMsg">Saved ✓</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ EOD REPORT ============ -->
+  <section id="tab-report" class="hidden">
+    <div class="card">
+      <h2>End-of-Day Report · paste this to your manager (Claude)</h2>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Generated from the day you last saved. Copy it, paste it into your chat, and your manager will review performance against targets.</p>
+      <div class="memo" id="memoBox"><div class="memo-head">MEMORANDUM</div>Save a day first, then come back here.</div>
+      <div class="savebar">
+        <button class="btn" id="copyMemo">Copy report</button>
+        <button class="btn ghost" id="regenMemo">Regenerate</button>
+        <span class="saved-msg hidden" id="copiedMsg">Copied ✓</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DASHBOARD ============ -->
+  <section id="tab-dash" class="hidden">
+    <div class="card">
+      <h2>Program to Date</h2>
+      <div class="statgrid" id="statGrid"></div>
+    </div>
+    <div class="card">
+      <h2>This Week vs Targets</h2>
+      <table>
+        <thead><tr><th>KPI</th><th>Actual</th><th>Weekly target</th><th>Status</th></tr></thead>
+        <tbody id="weekTable"></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h2>Daily Log</h2>
+      <table>
+        <thead><tr><th>Date</th><th>Apps</th><th>Outreach</th><th>Min</th><th>Probs</th><th>Resp</th><th>Ints</th><th>✓</th></tr></thead>
+        <tbody id="logTable"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ CURRICULUM ============ -->
+  <section id="tab-plan" class="hidden">
+    <div class="card">
+      <h2>12-Week Expert Track · starts Mon, Jul 20, 2026</h2>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px">SQL on Mon / Wed. Python on Tue / Thu. Friday is build day: projects, GitHub commits, and the weekly business review. Tap a week to expand.</p>
+      <div id="weekList"></div>
+    </div>
+  </section>
+
+  <footer>Mulenga Analytics Group · "Think of it. Dream of it. Catch it."</footer>
+</div>
+
+<script>
+const START = new Date(2026, 6, 20); // Mon Jul 20 2026
+const TASKS = [
+  {t:"8:30",n:"Morning standup + industry read",d:"Review pipeline, set today's 3 priorities. Read one GTM/analytics piece (Google Cloud blog, DataLemur crash course, or a RevOps newsletter) and note one metric or framework."},
+  {t:"8:45",n:"Skill block (45–60 min)",d:"Today's focus topic. Timer on. No tabs, no phone."},
+  {t:"9:45",n:"Log & commit",d:"Push solutions/notes to GitHub. One commit a day builds the green wall."},
+  {t:"10:00",n:"Tier 1 applications (2–3)",d:"Full ATS tailoring + cover letter + one LinkedIn touch per role"},
+  {t:"12:00",n:"Lunch / walk",d:"Away from the desk. Non-negotiable."},
+  {t:"13:00",n:"Tier 2 applications (4–5)",d:"Light keyword tuning on the matching base resume"},
+  {t:"14:30",n:"Tier 3 quick applies (2–3)",d:"Easy apply. Volume plays."},
+  {t:"15:00",n:"Outreach (3–5 messages)",d:"Recruiters + alumni + hiring managers. Short intros, resume attached."},
+  {t:"15:30",n:"Follow-ups + interview drill (rotating)",d:"Chase open threads, then run today's drill. Mon: web KPIs + Heap/Databricks/dbt/Atlan talk track (MSK). Tue: 45-second timed answers, insurance + relationship themes (Howden). Wed: STAR behavioral bank, 2 stories out loud (Sendero/consulting). Thu: analytics-to-client-growth pitch + retail-roots story (Google GCS). Fri: exec readout — present this week's KPIs in 3 min as if to leadership (Google PACE)."},
+  {t:"16:00",n:"EOD report",d:"Log KPIs, generate the memo, send it to your manager"}
+];
+const CURRICULUM = [
+  {w:1,title:"SQL & Python reboot",sql:"SELECT, WHERE, ORDER BY, LIMIT, aggregates (COUNT/SUM/AVG). Do SQLBolt lessons 1–12, then LeetCode SQL 50 easies.",py:"Core syntax back under your fingers: types, loops, functions, string methods. HackerRank Python easy set, 3–4 per session.",fri:"Set up practice repo on GitHub. Solve 3 timed easies (10 min each). Weekly business review."},
+  {w:2,title:"JOINs & control flow",sql:"INNER/LEFT/SELF joins, GROUP BY + HAVING, CASE WHEN. DataLemur easies.",py:"List/dict comprehensions, sorting with keys, error handling. Small kata drills.",fri:"Mini-challenge: answer 5 business questions on one dataset using only JOINs. Commit + review."},
+  {w:3,title:"Subqueries, CTEs & pandas",sql:"Subqueries vs CTEs, EXISTS/IN, multi-step logic with WITH clauses.",py:"pandas: read_csv, filtering, groupby, value_counts. Recreate Monday's SQL answers in pandas.",fri:"Same dataset, both tools: SQL vs pandas side-by-side notebook. Commit + review."},
+  {w:4,title:"Window functions I & merges",sql:"ROW_NUMBER, RANK, DENSE_RANK, PARTITION BY. Top-N-per-group problems (classic interview pattern).",py:"pandas merge/concat, handling nulls, dtypes, datetime parsing.",fri:"Clean a messy Kaggle dataset end to end. Document decisions in the README."},
+  {w:5,title:"Window functions II & EDA",sql:"LAG/LEAD, running totals, moving averages, date spines. Month-over-month growth problems. Open a free BigQuery sandbox and re-solve 2 problems there on public datasets (the Google PACE stack).",py:"Start EDA Project #1 on a business dataset (sales, marketing, or healthcare claims).",fri:"Project #1 working session. 3 charts, 3 insights, written like an analyst memo."},
+  {w:6,title:"Case-style SQL & storytelling",sql:"StrataScratch mediums, written as if answering a stakeholder question, not just passing tests.",py:"matplotlib/seaborn fundamentals. Finish and publish Project #1.",fri:"Publish Project #1 to GitHub Pages. Review: could a hiring manager skim it in 90 seconds?"},
+  {w:7,title:"Performance & automation",sql:"Query plans, EXPLAIN, indexes conceptually, when CTEs hurt. Rewrite 3 of your old queries faster.",py:"Automation: pathlib, requests, reading APIs, writing Excel outputs with openpyxl.",fri:"Build a small automation: a script that formats your weekly KPI log into a report."},
+  {w:8,title:"Timed drills & scripting",sql:"Timed mediums: 3 problems in 45 min, out loud, explaining as you go. Mix in BigQuery syntax.",py:"Automation Project #2: a job-application tracker that scores postings by fit (your first mini propensity model). Ship v1.",fri:"Ship Project #2 v1 to GitHub. Weekly review: response-rate audit on 4 weeks of applications."},
+  {w:9,title:"GTM metrics fluency",sql:"Win rate, pipeline conversion, funnels, retention, cohorts in SQL. These are the exact KPIs in the Google PACE JD. DataLemur/StrataScratch hard-leaning mediums.",py:"Project #3: propensity-to-convert model on a public marketing/sales dataset. Logistic regression, score accounts, output a ranked targeting list. Extends your Penta credibility-scoring story.",fri:"Project #3 working session. Practice presenting findings in 3 minutes, timed, as if to sales leadership."},
+  {w:10,title:"Mock interview mode",sql:"Full mock SQL interviews (45 min, camera on, explaining aloud). Ask Claude to run them.",py:"Polish Project #3: README, docstrings, clean commit history. Build a free Looker Studio dashboard on top of it (BI platform practice, exec-readout ready).",fri:"Publish Project #3 + dashboard. Record yourself walking through it once."},
+  {w:11,title:"Weak-spot elimination",sql:"Review every problem you missed since Week 1. Re-solve cold. Mixed timed sets.",py:"Draft a LinkedIn/Substack write-up of one project: the business problem, not the code.",fri:"Publish the write-up. It doubles as B2B creator content."},
+  {w:12,title:"Exam week",sql:"Two full mock interviews. Flashcards on window functions, joins, CTE patterns.",py:"Portfolio audit: 3 projects live, pinned repos, profile README.",fri:"Quarter-end business review with your manager: full KPI retro + next-quarter plan."}
+];
+
+let viewDate = new Date();
+viewDate.setHours(0,0,0,0);
+if (viewDate < START) viewDate = new Date(START);
+let allDays = {}; // date -> data cache
+
+const $ = id => document.getElementById(id);
+const fmtKey = d => d.toISOString().slice(0,10);
+const fmtLabel = d => d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+const isWeekend = d => d.getDay()===0||d.getDay()===6;
+const programDay = d => Math.floor((d-START)/86400000);
+const weekNum = d => Math.min(12, Math.max(1, Math.floor(programDay(d)/7)+1));
+
+function focusFor(d){
+  const wk = CURRICULUM[weekNum(d)-1];
+  const dow = d.getDay();
+  if(dow===5) return {tag:"BUILD",title:"Friday build day — Week "+wk.w+": "+wk.title,desc:wk.fri,cls:"fri"};
+  if(dow===2||dow===4) return {tag:"PYTHON",title:"Week "+wk.w+": "+wk.title,desc:wk.py,cls:"py"};
+  return {tag:"SQL",title:"Week "+wk.w+": "+wk.title,desc:wk.sql,cls:"sql"};
+}
+
+// ---------- storage (dual-mode: Claude artifact storage OR browser localStorage on GitHub Pages) ----------
+const store = {
+  hasCloud: (typeof window.storage !== 'undefined') && window.storage && typeof window.storage.get === 'function',
+  async get(k){
+    if(this.hasCloud){ try{ const r=await window.storage.get(k); return r?r.value:null; }catch(e){ return null; } }
+    try{ return localStorage.getItem('aos:'+k); }catch(e){ return null; }
+  },
+  async set(k,v){
+    if(this.hasCloud){ try{ await window.storage.set(k,v); return true; }catch(e){ return false; } }
+    try{ localStorage.setItem('aos:'+k,v); return true; }catch(e){ return false; }
+  },
+  async list(prefix){
+    if(this.hasCloud){ try{ const r=await window.storage.list(prefix); return (r&&r.keys)?r.keys:[]; }catch(e){ return []; } }
+    try{
+      const out=[];
+      for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k&&k.startsWith('aos:'+prefix)) out.push(k.slice(4)); }
+      return out;
+    }catch(e){ return []; }
+  }
+};
+async function loadDay(key){
+  if(allDays[key]!==undefined) return allDays[key];
+  const v = await store.get('day:'+key);
+  try{ allDays[key] = v ? JSON.parse(v) : null; }catch(e){ allDays[key]=null; }
+  return allDays[key];
+}
+async function saveDayData(key,data){
+  const ok = await store.set('day:'+key, JSON.stringify(data));
+  if(ok){ allDays[key]=data; await store.set('lastSaved', key); }
+  return ok;
+}
+async function loadAllDays(){
+  const keys = await store.list('day:');
+  for(const k of keys){
+    const key = k.replace('day:','');
+    if(allDays[key]===undefined){
+      const v = await store.get(k);
+      try{ allDays[key]= v?JSON.parse(v):null; }catch(e){}
+    }
+  }
+}
+
+// ---------- today tab ----------
+function blankDay(){ return {checks:Array(TASKS.length).fill(false),kpi:{t1:'',t2:'',t3:'',out:'',min:'',prob:'',resp:'',int:'',drill:'',notes:'',block:'',tom:''}}; }
+
+async function renderToday(){
+  const key = fmtKey(viewDate);
+  $('dayLabel').textContent = fmtLabel(viewDate);
+  const pd = programDay(viewDate);
+  $('dayMeta').textContent = pd<0 ? "Program starts Jul 20" : "Program day "+(pd+1)+" · Week "+weekNum(viewDate);
+
+  if(isWeekend(viewDate)){
+    $('weekendNote').classList.remove('hidden');
+    $('workday').classList.add('hidden');
+    return;
+  }
+  $('weekendNote').classList.add('hidden');
+  $('workday').classList.remove('hidden');
+
+  const f = focusFor(viewDate);
+  $('focusTag').textContent=f.tag;
+  $('focusTitle').textContent=f.title;
+  $('focusDesc').textContent=f.desc;
+
+  const data = (await loadDay(key)) || blankDay();
+  const list = $('taskList'); list.innerHTML='';
+  TASKS.forEach((t,i)=>{
+    const row=document.createElement('label');
+    row.className='task'+(data.checks[i]?' done':'');
+    row.innerHTML='<input type="checkbox" '+(data.checks[i]?'checked':'')+'><span class="time">'+t.t+'</span><span><span class="name">'+t.n+'</span><br><span class="desc">'+t.d+'</span></span>';
+    row.querySelector('input').addEventListener('change',async e=>{
+      data.checks[i]=e.target.checked;
+      row.classList.toggle('done',e.target.checked);
+      updateProgress(data);
+      await saveDayData(key,readFormInto(data));
+      refreshHeader();
+    });
+    list.appendChild(row);
+  });
+  updateProgress(data);
+
+  const k=data.kpi;
+  $('k_t1').value=k.t1; $('k_t2').value=k.t2; $('k_t3').value=k.t3;
+  $('k_out').value=k.out; $('k_min').value=k.min; $('k_prob').value=k.prob;
+  $('k_resp').value=k.resp; $('k_int').value=k.int; $('k_drill').value=k.drill||'';
+  $('k_notes').value=k.notes; $('k_block').value=k.block; $('k_tom').value=k.tom;
+}
+function updateProgress(data){
+  const done=data.checks.filter(Boolean).length;
+  $('progFill').style.width=Math.round(done/TASKS.length*100)+'%';
+}
+function readFormInto(data){
+  data.kpi={
+    t1:$('k_t1').value,t2:$('k_t2').value,t3:$('k_t3').value,
+    out:$('k_out').value,min:$('k_min').value,prob:$('k_prob').value,
+    resp:$('k_resp').value,int:$('k_int').value,drill:$('k_drill').value,
+    notes:$('k_notes').value,block:$('k_block').value,tom:$('k_tom').value
+  };
+  return data;
+}
+$('saveDay').addEventListener('click',async()=>{
+  const key=fmtKey(viewDate);
+  const data=(await loadDay(key))||blankDay();
+  const ok=await saveDayData(key,readFormInto(data));
+  if(ok){
+    $('savedMsg').classList.remove('hidden');
+    setTimeout(()=>$('savedMsg').classList.add('hidden'),2000);
+    refreshHeader();
+  }
+});
+$('prevDay').addEventListener('click',()=>{do{viewDate.setDate(viewDate.getDate()-1)}while(false);renderToday();});
+$('nextDay').addEventListener('click',()=>{do{viewDate.setDate(viewDate.getDate()+1)}while(false);renderToday();});
+
+// ---------- EOD memo ----------
+const num=v=>parseInt(v)||0;
+async function buildMemo(){
+  const key = await store.get('lastSaved');
+  if(!key){ $('memoBox').innerHTML='<div class="memo-head">MEMORANDUM</div>Save a day first, then come back here.'; return; }
+  const d=await loadDay(key);
+  if(!d){ $('memoBox').innerHTML='<div class="memo-head">MEMORANDUM</div>No data found.'; return; }
+  const k=d.kpi, apps=num(k.t1)+num(k.t2)+num(k.t3);
+  const done=d.checks.filter(Boolean).length;
+  const dateObj=new Date(key+'T12:00:00');
+  const memo=
+"MEMORANDUM\n"+
+"TO: Hiring Manager (Claude)\nFROM: Pasha M, Analytics Associate\nRE: EOD Report — "+dateObj.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})+"\n\n"+
+"APPLICATIONS: "+apps+" total (T1: "+num(k.t1)+" / T2: "+num(k.t2)+" / T3: "+num(k.t3)+") — target 10\n"+
+"OUTREACH: "+num(k.out)+" messages — target 3–5\n"+
+"SKILL BLOCK: "+num(k.min)+" min, "+num(k.prob)+" problems solved\n"+
+"PIPELINE: "+num(k.resp)+" responses, "+num(k.int)+" interviews booked\n"+
+"INTERVIEW DRILLS: "+num(k.drill)+" completed (rotation: MSK / Howden / STAR / Google GCS / exec readout)\n"+
+"SCHEDULE ADHERENCE: "+done+"/"+TASKS.length+" blocks completed\n\n"+
+"PRACTICED / APPLIED TO:\n"+(k.notes||"—")+"\n\n"+
+"BLOCKERS / WINS:\n"+(k.block||"—")+"\n\n"+
+"TOMORROW'S TOP 3:\n"+(k.tom||"—");
+  $('memoBox').textContent=memo;
+}
+$('regenMemo').addEventListener('click',buildMemo);
+$('copyMemo').addEventListener('click',async()=>{
+  try{
+    await navigator.clipboard.writeText($('memoBox').textContent);
+    $('copiedMsg').classList.remove('hidden');
+    setTimeout(()=>$('copiedMsg').classList.add('hidden'),2000);
+  }catch(e){
+    const r=document.createRange(); r.selectNodeContents($('memoBox'));
+    const s=getSelection(); s.removeAllRanges(); s.addRange(r);
+  }
+});
+
+// ---------- dashboard ----------
+function mondayOf(d){ const x=new Date(d); const day=x.getDay(); x.setDate(x.getDate()-((day+6)%7)); x.setHours(0,0,0,0); return x; }
+async function renderDash(){
+  await loadAllDays();
+  const keys=Object.keys(allDays).filter(k=>allDays[k]).sort();
+  let tApps=0,tOut=0,tProb=0,tMin=0,tResp=0,tInt=0;
+  const rows=[];
+  keys.forEach(k=>{
+    const d=allDays[k],kp=d.kpi;
+    const apps=num(kp.t1)+num(kp.t2)+num(kp.t3);
+    tApps+=apps;tOut+=num(kp.out);tProb+=num(kp.prob);tMin+=num(kp.min);tResp+=num(kp.resp);tInt+=num(kp.int);
+    rows.push({k,apps,out:num(kp.out),min:num(kp.min),prob:num(kp.prob),resp:num(kp.resp),int:num(kp.int),done:d.checks.filter(Boolean).length});
+  });
+  // streak: consecutive saved weekdays ending at most recent
+  let streak=0;
+  const t=new Date(); t.setHours(0,0,0,0);
+  let c=new Date(t);
+  if(isWeekend(c)||!allDays[fmtKey(c)]) { /* allow streak check to start yesterday */ }
+  for(let i=0;i<200;i++){
+    if(isWeekend(c)){ c.setDate(c.getDate()-1); continue; }
+    const has=allDays[fmtKey(c)];
+    if(has){ streak++; c.setDate(c.getDate()-1); }
+    else { if(fmtKey(c)===fmtKey(t)){ c.setDate(c.getDate()-1); continue; } break; }
+  }
+  const respRate=tApps?((tResp/tApps)*100).toFixed(1):'0.0';
+  $('statGrid').innerHTML=
+    stat(streak,'Day streak')+stat(tApps,'Applications')+stat(tOut,'Outreach msgs')+
+    stat(tProb,'Problems solved')+stat(Math.round(tMin/60*10)/10+'h','Practice hours')+
+    stat(tResp,'Responses')+stat(tInt,'Interviews')+stat(respRate+'%','Response rate');
+
+  // this week
+  const mon=mondayOf(new Date());
+  let wApps=0,wOut=0,wProb=0,wMin=0,wDays=0;
+  rows.forEach(r=>{ const d=new Date(r.k+'T12:00:00'); if(d>=mon){wApps+=r.apps;wOut+=r.out;wProb+=r.prob;wMin+=r.min;wDays++;} });
+  $('weekTable').innerHTML=
+    wrow('Applications',wApps,50)+wrow('Outreach messages',wOut,15)+
+    wrow('Problems solved',wProb,20)+wrow('Practice minutes',wMin,225)+
+    wrow('Days logged',wDays,5);
+
+  $('logTable').innerHTML = rows.slice(-15).reverse().map(r=>
+    '<tr><td>'+r.k.slice(5)+'</td><td>'+r.apps+'</td><td>'+r.out+'</td><td>'+r.min+'</td><td>'+r.prob+'</td><td>'+r.resp+'</td><td>'+r.int+'</td><td>'+r.done+'/'+TASKS.length+'</td></tr>'
+  ).join('') || '<tr><td colspan="8">No days logged yet. Your first entry starts the record.</td></tr>';
+
+  $('hStreak').textContent=streak;
+  $('hApps').textContent=tApps;
+  $('hProbs').textContent=tProb;
+}
+function stat(n,l){return '<div class="stat"><div class="num">'+n+'</div><div class="lbl">'+l+'</div></div>';}
+function wrow(name,actual,target){
+  const hit=actual>=target;
+  return '<tr><td>'+name+'</td><td>'+actual+'</td><td>'+target+'</td><td class="'+(hit?'hit':'miss')+'">'+(hit?'ON TARGET':'BEHIND')+'</td></tr>';
+}
+async function refreshHeader(){ renderDash(); }
+
+// ---------- curriculum ----------
+function renderPlan(){
+  const cw=weekNum(new Date());
+  $('weekList').innerHTML=CURRICULUM.map(w=>{
+    const s=new Date(START); s.setDate(s.getDate()+(w.w-1)*7);
+    const e=new Date(s); e.setDate(e.getDate()+4);
+    const fmt=d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    const isCur=w.w===cw && new Date()>=START;
+    return '<div class="week'+(isCur?' open':'')+'"><div class="week-head" onclick="this.parentElement.classList.toggle(\'open\')">'+
+      '<span class="wnum'+(isCur?' current':'')+'">WK '+w.w+'</span><span class="wtitle">'+w.title+'</span><span class="wdate">'+fmt(s)+'–'+fmt(e)+'</span></div>'+
+      '<div class="week-body">'+
+      '<div class="row"><span class="pill sql">SQL M/W</span><span>'+w.sql+'</span></div>'+
+      '<div class="row"><span class="pill py">PY T/Th</span><span>'+w.py+'</span></div>'+
+      '<div class="row"><span class="pill fri">FRI</span><span>'+w.fri+'</span></div>'+
+      '</div></div>';
+  }).join('');
+}
+
+// ---------- tabs ----------
+document.querySelectorAll('nav button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    ['today','report','dash','plan'].forEach(t=>$('tab-'+t).classList.add('hidden'));
+    $('tab-'+b.dataset.tab).classList.remove('hidden');
+    if(b.dataset.tab==='report') buildMemo();
+    if(b.dataset.tab==='dash') renderDash();
+  });
+});
+
+// init
+(async function(){
+  renderPlan();
+  await renderToday();
+  await renderDash();
+})();
+</script>
+</body>
+</html>
